@@ -26,7 +26,7 @@ function TaskFlow() {
 
         </div>
         <div className="TaskList">
-
+            <TaskList tasks={tasks}/>
         </div>
     </div>
     )
@@ -66,4 +66,48 @@ function AddTask(props){
     </>
     )
 }
+
+function TaskList(props){
+    const tasks = props.tasks;
+
+    const convertTime12to24 = (time12h) => {
+        const [time, modifier] = time12h.split(' ');
+
+        let [hours, minutes] = time.split(':');
+
+        if (hours === '12') {
+            hours = '00';
+        }
+
+        if (modifier === 'PM') {
+            hours = parseInt(hours, 10) + 12;
+        }
+
+        return `${hours}:${minutes}`;
+    };
+
+    return(
+        <table>
+            <thead>
+            <tr>
+                <th>Title</th>
+                <th>Urgency</th>
+                <th>Time</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            {tasks.map(t=>
+                <tr key={t.title}>
+                    <td>{t.title}</td>
+                    <td>{t.urgency}</td>
+                    <td>{convertTime12to24(t.date.toLocaleTimeString())}</td>
+                    <td>{t.description}</td>
+                </tr>
+            )}
+            </tbody>
+        </table>
+    )
+}
+
 export default App;
