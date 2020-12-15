@@ -13,9 +13,9 @@ function App() {
 function TaskFlow() {
     const [tasks, setTasks] = useState([]);
 
-    const addNewTask = (task) =>{
-        setTasks([...tasks, task]);
-    };
+    const addNewTask = (task) => setTasks([...tasks, task]);
+
+    const removeTask = (task)=> setTasks(tasks.filter((t)=> t.title !== task.title));
 
     return(
     <div className="grid-container">
@@ -26,7 +26,7 @@ function TaskFlow() {
 
         </div>
         <div className="TaskList">
-            <TaskList tasks={tasks}/>
+            <TaskList tasks={tasks} removeTask={removeTask}/>
         </div>
     </div>
     )
@@ -69,6 +69,7 @@ function AddTask(props){
 
 function TaskList(props){
     const tasks = props.tasks;
+    const removeTask = props.removeTask;
 
     const convertTime12to24 = (time12h) => {
         const [time, modifier] = time12h.split(' ');
@@ -94,6 +95,7 @@ function TaskList(props){
                 <th>Urgency</th>
                 <th>Time</th>
                 <th>Description</th>
+                <th>Delete</th>
             </tr>
             </thead>
             <tbody>
@@ -103,6 +105,7 @@ function TaskList(props){
                     <td>{t.urgency}</td>
                     <td>{convertTime12to24(t.date.toLocaleTimeString())}</td>
                     <td>{t.description}</td>
+                    <td><button onClick={()=>removeTask(t)}>❌</button></td>
                 </tr>
             )}
             </tbody>
