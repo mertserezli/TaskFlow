@@ -28,7 +28,7 @@ function TaskFlow() {
 
     const pickTask = useCallback(() =>{
         const eligibleTasks = tasks.filter((t) => t.date < new Date());
-        eligibleTasks.sort((a, b)=> a.priority - b.priority);
+        eligibleTasks.sort((a, b)=> a.urgency - b.urgency);
         setCurTask(eligibleTasks[0]);
     },[tasks]);
 
