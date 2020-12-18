@@ -14,7 +14,10 @@ function TaskFlow() {
     const [tasks, setTasks] = useState([]);
     const [curTask, setCurTask] = useState(null);
 
-    const addNewTask = (task) => setTasks([...tasks, task]);
+    const addNewTask = (task) => {
+        setTasks([...tasks, task]);
+        setCurTask(null)
+    };
 
     const removeTask = (task) => {
         setTasks(tasks.filter((t)=> t.title !== task.title));
@@ -23,6 +26,11 @@ function TaskFlow() {
 
     const editTask = (task) => {
         setTasks([...tasks.filter((t)=> t.title !== task.title), task]);
+        setCurTask(null)
+    };
+
+    const importTasks = (newTasks) => {
+        setTasks([...tasks, ...newTasks]);
         setCurTask(null)
     };
 
@@ -50,7 +58,7 @@ function TaskFlow() {
             {curTask ? <CurrentTask task={curTask} editTask={editTask} /> : <></>}
         </div>
         <div className="TaskList">
-            <TaskList tasks={tasks} removeTask={removeTask}/>
+            <TaskList tasks={tasks} removeTask={removeTask} importTasks={importTasks}/>
         </div>
     </div>
     )
@@ -136,9 +144,28 @@ function CurrentTask(props){
     )
 }
 
+const exportToJson = (object)=>{
+    let filename = "export.json";
+    let contentType = "application/json;charset=utf-8;";
+    object = object.map(task =>{ return {title: task.title, urgency: task.urgency, description: task.description }});
+    if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+        let blob = new Blob([decodeURIComponent(encodeURI(JSON.stringify(object)))], { type: contentType });
+        navigator.msSaveOrOpenBlob(blob, filename);
+    } else {
+        let a = document.createElement('a');
+        a.download = filename;
+        a.href = 'data:' + contentType + ',' + encodeURIComponent(JSON.stringify(object));
+        a.target = '_blank';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+};
+
 function TaskList(props){
     const tasks = props.tasks;
     const removeTask = props.removeTask;
+    const importTasks = props.importTasks;
 
     const convertTime12to24 = (time12h) => {
         const [time, modifier] = time12h.split(' ');
@@ -156,7 +183,23 @@ function TaskList(props){
         return `${hours}:${minutes}`;
     };
 
+    const importJSON = e => {
+        const fileReader = new FileReader();
+        fileReader.readAsText(e.target.files[0], "UTF-8");
+        fileReader.onload = e => {
+            let cardsToImport = JSON.parse(e.target.result);
+            cardsToImport.forEach(task => task.date = new Date());
+            importTasks(cardsToImport)
+        };
+    };
+
     return(
+    <>
+        <button onClick={() => exportToJson(tasks)}>
+            Export
+        </button>
+        <label htmlFor="avatar">Import: </label>
+        <input type="file" id="avatar" name="import" accept=".json" onChange={importJSON}/>
         <table>
             <thead>
             <tr>
@@ -179,6 +222,7 @@ function TaskList(props){
             )}
             </tbody>
         </table>
+    </>
     )
 }
 
