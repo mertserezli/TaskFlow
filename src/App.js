@@ -73,7 +73,10 @@ function AddTask(props){
 
     const handleSubmit = (event) => {
         event.preventDefault();
-        addNewTask({title, urgency, description, date: new Date()})
+        addNewTask({title, urgency, description, date: new Date()});
+        setTitle("");
+        setUrgency("");
+        setDescription("");
     };
 
     return(
