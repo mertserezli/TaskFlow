@@ -137,8 +137,8 @@ function CurrentTask(props){
                           value={description} onChange={event => setDescription(event.target.value)} /><br/>
             </div>
 
-            <label htmlFor="urgency">Schedule later:</label><br/>
-            <input type="number" placeholder="Enter urgency(1-4)" name="urgency" id="urgency" required
+            <label htmlFor="postpone">Schedule later:</label><br/>
+            <input type="number" placeholder="How long to postpone in minutes" name="postpone" id="postpone" required
                    value={scheduledMinLater} onChange={event => setScheduledMinLater(parseInt(event.target.value))} /><br/><br/>
 
             <input type="submit" value="Submit" />
@@ -148,7 +148,7 @@ function CurrentTask(props){
 }
 
 const exportToJson = (object)=>{
-    let filename = "export.json";
+    let filename = "TaskFlow-export.json";
     let contentType = "application/json;charset=utf-8;";
     object = object.map(task =>{ return {title: task.title, urgency: task.urgency, description: task.description }});
     if (window.navigator && window.navigator.msSaveOrOpenBlob) {
