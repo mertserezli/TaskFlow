@@ -1,5 +1,5 @@
 import './App.css';
-import React, {useState, useEffect, useCallback} from "react";
+import React, {useState, useEffect} from "react";
 
 function App() {
   return (
@@ -10,44 +10,50 @@ function App() {
   );
 }
 
+let timeout;
+
 function TaskFlow() {
     const [tasks, setTasks] = useState([]);
     const [curTask, setCurTask] = useState(null);
 
     const addNewTask = (task) => {
-        setTasks([...tasks, task]);
-        setCurTask(null)
+        const newTasks = [...tasks, task];
+        setTasks(newTasks);
+        pickTask(newTasks);
     };
 
     const removeTask = (task) => {
-        setTasks(tasks.filter((t)=> t.title !== task.title));
-        setCurTask(null)
+        const newTasks = [...tasks.filter((t)=> t.title !== task.title)];
+        setTasks(newTasks);
+        pickTask(newTasks);
     };
 
     const editTask = (task) => {
-        setTasks([...tasks.filter((t)=> t.title !== task.title), task]);
-        setCurTask(null)
+        const newTasks = [...tasks.filter((t)=> t.title !== task.title), task];
+        setTasks(newTasks);
+        pickTask(newTasks);
     };
 
-    const importTasks = (newTasks) => {
-        setTasks([...tasks, ...newTasks]);
-        setCurTask(null)
+    const importTasks = (importedTasks) => {
+        const newTasks = [...tasks, ...importedTasks];
+        setTasks(newTasks);
+        pickTask(newTasks);
     };
 
-    const pickTask = useCallback(() =>{
-        const eligibleTasks = tasks.filter((t) => t.date < new Date());
-        eligibleTasks.sort((a, b)=> a.urgency - b.urgency);
-        setCurTask(eligibleTasks[0]);
-    },[tasks]);
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            if (!curTask){
-                pickTask()
+    function pickTask(tasks){
+        clearTimeout(timeout);
+        const eligibleTasks = tasks.filter((t) => t.date < new Date()).sort((a, b)=> a.urgency - b.urgency);
+        if(0 < eligibleTasks.length) {
+            setCurTask(eligibleTasks[0]);
+        }else{
+            setCurTask(null);
+            if (0 < tasks.length) {
+                const closest = Math.min(...tasks.map(t => t.date.getTime()));
+                timeout = setTimeout(()=>pickTask(tasks), closest - new Date().getTime() + 500);
             }
-        }, 1000);
-        return () => clearInterval(interval);
-    }, [curTask, pickTask]);
+        }
+    }
+
 
     return(
     <div className="grid-container">
@@ -102,10 +108,7 @@ function AddTask(props){
     )
 }
 
-function CurrentTask(props){
-    const task = props.task;
-    const editTask = props.editTask;
-
+function CurrentTask({task, editTask}){
     const [title, setTitle] = useState(task.title);
     const [urgency, setUrgency] = useState(task.urgency);
     const [description, setDescription] = useState(task.description);
@@ -117,6 +120,13 @@ function CurrentTask(props){
         scheduleDate.setMinutes(scheduleDate.getMinutes() + scheduledMinLater);
         editTask({title, urgency, description, date: scheduleDate})
     };
+
+    useEffect(() => {
+        setTitle(task.title);
+        setUrgency(task.urgency);
+        setDescription(task.description);
+        setScheduledMinLater(30);
+    }, [task]);
 
     return(
     <>
